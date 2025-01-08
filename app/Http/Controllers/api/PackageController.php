@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Package;
 use App\Http\Requests\PackageRequest;
-use App\Http\Controllers\api\ResponseController;
 use App\Http\Resources\Package as PackageResource;
 
 class PackageController extends ResponseController {
@@ -18,43 +17,28 @@ class PackageController extends ResponseController {
         return $this->sendResponse( PackageResource::collection( $packages ), "Kiszerelések betöltve");
     }
 
-    public function getPackage( $packageName ) {
-
-        $package = Package::where( "package", $packageName )->first();
-
-        return $package;
-    }
-
     public function newPackage( PackageRequest $request ) {
 
-        $request->validated();
+        //$request->validated();
 
-        $isPackage = $this->getPackage( $request );
-        if( is_null( $isPackage )) {
+        $package = new Package();
+        $package->package = $request[ "package" ];
 
-            $package = new Package();
-            $package->package = $request[ "package" ];
+        $package->save();
 
-            $package->save();
-
-            return $this->sendResponse( new PackageResource( $package ), "Kiszerelés kiírva");
-
-        }else {
-
-            return $this->sendError( "Adathiba", [ "A kiszerelés létezik" ], 406 );
-        }
+        return $this->sendResponse( new PackageResource( $package ), "Kiszerelés kiírva");
     }
-// javítani
-    public function modifyPackage( PackageRequest $request, $id  ) {
 
-        $request->validated();
+    public function modifyPackage( PackageRequest $request ) {
 
-        $package = Package::find( $id )->first();
+        //$request->validated();
+
+        $package = Package::find( $request[ "id" ] )->first();
         if( !is_null( $package )) {
 
             $package->package = $request[ "package" ];
 
-            //$package->update();
+            $package->update();
 
             return $this->sendResponse( new PackageResource( $package ), "Kiszerelés módosítva");
 
@@ -67,7 +51,7 @@ class PackageController extends ResponseController {
 
     public function destroyPackage( Request $request ) {
 
-        $package = Package::where( "package", $request[ "package" ])->first();
+        $package = Package::find( $request[ "id" ]);
 
         if( !is_null( $package )) {
 
@@ -77,11 +61,8 @@ class PackageController extends ResponseController {
 
         }else {
 
-            return $this->sendError( "Adathiba", [ "Kiszerelés nem létezik" ], 405 );
+            return $this->sendError( "Adathiba", [ "Kiszerelés nem létezik" ], 406 );
         }
-
-
-
     }
 
     public function getPackageId( $packageName ) {

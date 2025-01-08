@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Drink;
 use App\Http\Resources\Drink as DrinkResource;
+use App\Http\Requests\DrinkAddRequest;
 
 class DrinkController extends ResponseController {
 
@@ -23,14 +24,14 @@ class DrinkController extends ResponseController {
         return $this->sendResponse( new DrinkResource( $drink ), "Betöltve" );
     }
 
-    public function newDrink( Request $request ) {
+    public function newDrink( DrinkAddRequest $request ) {
 
         $request->validated();
         $drink = new Drink();
         $drink->drink = $request[ "drink" ];
         $drink->amount = $request[ "amount" ];
-        $drink->type_id = $request[ "type_id" ];
-        $drink->package_id = $request[ "package_id" ];
+        $drink->type_id = ( new TypeController )->getTypeId( $request[ "type" ]);
+        $drink->package_id = ( new PackageController )->getPackageId( $request[ "package" ]);
 
         $drink->save();
 

@@ -6,50 +6,33 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Type;
 use App\Http\Requests\TypeRequest;
+use App\Http\Resources\Type as TypeResource;
 
-class TypeController extends Controller {
+class TypeController extends ResponseController {
 
     public function getTypes() {
 
         $types = Type::all();
 
-        return $this->sendResponse( PackageResource::collection( $types ), "Típusok betöltve");
-    }
-
-    public function getType( $typeName ) {
-
-        $type = Package::where( "type", $typeName )->first();
-
-        return $type;
+        return $this->sendResponse( TypeResource::collection( $types ), "Típusok betöltve");
     }
 
     public function newType( TypeRequest $request ) {
 
-        $request->validated();
+        //$request->validated();
+        $type = new Type();
 
-        $isType = $this->getType( $request );
-        if( is_null( $isType )) {
+        $type->type = $request[ "type" ];
+        $type->save();
 
-            $type = new Type();
-            $type->type = $request[ "type" ];
-            $type->save();
-
-            return $this->sendResponse( new TypeResource( $type ), "Típus kiírva");
-
-        }else {
-
-            return $this->sendError( "Adathiba", [ "A típus létezik" ], 406 );
-        }
-
-
-
+        return $this->sendResponse( new TypeResource( $type ), "Típus kiírva");
     }
 
-    public function modifyType( TypeRequest $request, $id ) {
+    public function modifyType( TypeRequest $request ) {
 
-        $request->validated();
+        //$request->validated();
 
-        $type = Type::find( $id );
+        $type = Type::find( $request[ "id" ] );
         if( !is_null( $type )) {
 
             $type->type = $request[ "type" ];
@@ -67,7 +50,7 @@ class TypeController extends Controller {
 
     public function destroyType( Request $request ) {
 
-        $type = Type::where( "type", $request[ "type" ]);
+        $type = Type::find( $request[ "id" ]);
 
         if( !is_null( $type )) {
 
@@ -77,11 +60,8 @@ class TypeController extends Controller {
 
         }else {
 
-            return $this->sendError( "Adathiba", [ "Típus nem létezik" ], 405 );
+            return $this->sendError( "Adathiba", [ "Típus nem létezik" ], 406 );
         }
-
-
-        return response()->json([ "Sikeres törlés", "Típus" => $type ]);
     }
 
     public function getTypeId( $typeName ) {
