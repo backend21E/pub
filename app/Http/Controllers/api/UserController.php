@@ -9,6 +9,8 @@ use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\api\ResponseController;
 use Carbon\Carbon;
+use App\Http\Controllers\MailController;
+
 
 class UserController extends ResponseController {
 
@@ -66,6 +68,8 @@ class UserController extends ResponseController {
 
                 ( new BannerController )->setBannedTime( $request[ "name" ]);
                 $bannedTime = ( new BannerController )->getBannedTime( $request[ "name" ]);
+
+                ( new MailController )->sendMail( $request[ "name"], $bannedTime );
 
                 $errormessage = [ "message" => "Következő lehetőség:", "time" => $bannedTime ];
 
